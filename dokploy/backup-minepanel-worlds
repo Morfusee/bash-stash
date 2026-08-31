@@ -6,11 +6,11 @@ BACKUP="/tmp/minepanel-worlds-$(date +%Y-%m-%d_%H-%M-%S).tar.gz"
 WORLDS_PARENT="/var/lib/docker/volumes/game-hosting-minepanel-rchbtm_minepanel-servers/_data/jai-port"
 trap 'rm -f "$BACKUP"' EXIT
 
-tar -czf "$BACKUP" \
+tar -chzf "$BACKUP" \
   -C "$WORLDS_PARENT" \
   worlds
 
 rclone copy "$BACKUP" \
-  gdrive:MinePanel/worlds \
+  gdrive:Dokploy-Backups/MinePanel/worlds \
   --config "/home/${SUDO_USER:-$USER}/.config/rclone/rclone.conf" \
   --progress
