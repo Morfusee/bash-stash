@@ -12,4 +12,5 @@ tar -czf "$BACKUP" \
 
 rclone copy "$BACKUP" \
   gdrive:MinePanel/worlds \
+  --config "/home/${SUDO_USER:-$USER}/.config/rclone/rclone.conf" \
   --progress
