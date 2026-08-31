@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+BACKUP="/tmp/minepanel-worlds-$(date +%Y-%m-%d_%H-%M-%S).tar.gz"
+trap 'rm -f "$BACKUP"' EXIT
+
+tar -czf "$BACKUP" \
+  -C "/var/lib/docker/volumes/game-hosting-minepanel-rchbtm_minepanel-servers/_data/jai-port" \
+  worlds
+
+rclone copy "$BACKUP" \
+  gdrive-crypt:MinePanel/worlds \
+  --progress
