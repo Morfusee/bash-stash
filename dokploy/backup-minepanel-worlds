@@ -3,12 +3,11 @@
 set -euo pipefail
 
 BACKUP="/tmp/minepanel-worlds-$(date +%Y-%m-%d_%H-%M-%S).tar.gz"
-SERVER_DIR="/var/lib/docker/volumes/game-hosting-minepanel-rchbtm_minepanel-servers/_data/jai-port"
+MINEPANEL_DATA_DIR="/var/lib/docker/volumes/game-hosting-minepanel-rchbtm_minepanel-servers/_data"
 trap 'rm -f "$BACKUP"' EXIT
 
-tar -chzf "$BACKUP" \
-  -C "$SERVER_DIR" \
-  mc-data
+find "$MINEPANEL_DATA_DIR" -mindepth 2 -maxdepth 2 -type d -name mc-data -printf '%P\0' |
+  tar -chzf "$BACKUP" -C "$MINEPANEL_DATA_DIR" --null -T -
 
 rclone copy "$BACKUP" \
   gdrive:Dokploy-Backups/MinePanel/worlds \
