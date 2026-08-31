@@ -2,14 +2,31 @@
 
 set -euo pipefail
 
-BACKUP="/tmp/minepanel-worlds-$(date +%Y-%m-%d_%H-%M-%S).tar.gz"
+BACKUP=""
 MINEPANEL_DATA_DIR="/var/lib/docker/volumes/game-hosting-minepanel-rchbtm_minepanel-servers/_data"
+TIMESTAMP="$(date +%Y-%m-%d_%H-%M-%S)"
 trap 'rm -f "$BACKUP"' EXIT
 
-find "$MINEPANEL_DATA_DIR" -mindepth 2 -maxdepth 2 -type d -name mc-data -printf '%P\0' |
-  tar -chzf "$BACKUP" -C "$MINEPANEL_DATA_DIR" --null -T -
+FOUND_SERVER=false
 
-rclone copy "$BACKUP" \
-  gdrive:Dokploy-Backups/MinePanel/worlds \
-  --config "/home/${SUDO_USER:-$USER}/.config/rclone/rclone.conf" \
-  --progress
+for SERVER_DIR in "$MINEPANEL_DATA_DIR"/*; do
+  [[ -d "$SERVER_DIR/mc-data" ]] || continue
+  FOUND_SERVER=true
+  SERVER_NAME="${SERVER_DIR##*/}"
+  BACKUP="/tmp/minepanel-worlds-$TIMESTAMP.tar.gz"
+
+  tar -chzf "$BACKUP" -C "$SERVER_DIR" mc-data
+
+  rclone copy "$BACKUP" \
+    "gdrive:Dokploy-Backups/MinePanel/worlds/$SERVER_NAME" \
+    --config "/home/${SUDO_USER:-$USER}/.config/rclone/rclone.conf" \
+    --progress
+
+  rm "$BACKUP"
+  BACKUP=""
+done
+
+[[ "$FOUND_SERVER" == true ]] || {
+  echo "No MinePanel servers with mc-data found." >&2
+  exit 1
+}
