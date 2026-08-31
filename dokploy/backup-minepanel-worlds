@@ -11,5 +11,5 @@ tar -czf "$BACKUP" \
   worlds
 
 rclone copy "$BACKUP" \
-  gdrive-crypt:MinePanel/worlds \
+  gdrive:MinePanel/worlds \
   --progress
